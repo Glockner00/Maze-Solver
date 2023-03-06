@@ -1,17 +1,17 @@
 """
 @author Axel Glöckner
 
-This program generates a random maze Using a deep first search algorithm.
-where the shortest way/solution to the maze is found with the A* algorithm.
-The A* algorithm is vizulised with pygame.
-
 CELL COLOR CODING:
 GREEN : Start and end points.
 BLUE : Shortest way / the solution to the maze.
 RED : Closed cell (checked).
 YELLOW : Open cell (unchecked).
 
-Enter SPACE to start the search.
+KEY COMMANDS:
+    SPACE : start the search.
+    r : reset the A* visual
+    s : reset the A* visual and generate new start and end points
+    m : generate a new maze with the same dimensions.
 """
 
 import random
@@ -25,7 +25,7 @@ BLUE = (28, 134, 238)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-CELL_SIZE = 15
+CELL_SIZE = 13
 
 # A class that represents a single Cell in the maze.
 class Cell:
@@ -38,6 +38,9 @@ class Cell:
         self.end = False
         self.color = BLACK
         self.neighbors = []
+
+    def reset(self):
+        self.color = BLACK
 
     def makeOpen(self):
         self.color = YELLOW
@@ -286,7 +289,30 @@ def main():
                         for cell in row:
                             cell.update_neighbours(maze)
                     aStar(maze, lambda: draw(WIN, maze), WIN)
+                
+                # r -> restart A*
+                if event.key == pygame.K_r:
+                    for x in range(len(maze)):
+                        for y in range(len(maze[x])):
+                            cell = maze[x][y]
+                            if cell is not(cell.start and cell.end):
+                                cell.reset()
+                
+                # s -> restart A* and generate new start and endpoints
+                if event.key == pygame.K_s:
+                    for x in range(len(maze)):
+                        for y in range(len(maze[x])):
+                            cell = maze[x][y]
+                            cell.reset()
+                            if cell.start or cell.end:
+                                cell.reset()
+                                cell.start = False
+                                cell.end = False
+                    makeStartEnd(maze)
+
+                # m -> generate a new maze in the same dimensions.
+                if event.key == pygame.K_m:
+                    maze = generateMaze(x+1,y+1)
+                    makeStartEnd(maze)
     pygame.quit()
-
-
 main()
