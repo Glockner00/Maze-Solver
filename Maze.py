@@ -1,6 +1,4 @@
 """
-@author Axel Glöckner
-
 CELL COLOR CODING:
 GREEN : Start and end points.
 BLUE : Shortest way / the solution to the maze.
@@ -30,14 +28,14 @@ CELL_SIZE = 13
 # A class that represents a single Cell in the maze.
 class Cell:
     def __init__(self, x, y):
-        self.x = x
+        self.x = x 
         self.y = y
-        self.visited = False
+        self.visited = False # for DFS
         self.walls = [True, True, True, True] #top, right, bottom, left
         self.start = False
         self.end = False
         self.color = BLACK
-        self.neighbors = []
+        self.neighbors = [] # for A*
 
     def reset(self):
         self.color = BLACK
@@ -73,8 +71,8 @@ class Cell:
     
     # For drawing a single cell.
     def draw(self, win):
-        cellX, cellY = self.x * CELL_SIZE, self.y * CELL_SIZE
-        pygame.draw.circle(win, self.color, (cellX + CELL_SIZE//2, cellY + CELL_SIZE //2), CELL_SIZE//4) 
+        cellX, cellY = self.x * CELL_SIZE, self.y * CELL_SIZE 
+        pygame.draw.circle(win, self.color, (cellX + CELL_SIZE//2, cellY + CELL_SIZE //2), CELL_SIZE//4)# goal.
 
 def generateMaze(w: int, h: int) -> list:
     maze = [[Cell(x,y) for y in range(h)] for x in range(w)] # a 2D array filled with cells
@@ -101,18 +99,18 @@ def generateMaze(w: int, h: int) -> list:
 def removeWall(current: Cell, choice: Cell):
     if current.x == choice.x:
         if current.y>choice.y:
-            current.walls[0] = False
-            choice.walls[2] = False
+            current.walls[0] = False # current: top
+            choice.walls[2] = False # neighbor: bottom
         else:
-            current.walls[2] = False
-            choice.walls[0] = False
+            current.walls[2] = False # bottom
+            choice.walls[0] = False # top
     else:
         if current.x > choice.x:
-            current.walls[3] = False
-            choice.walls[1] = False
+            current.walls[3] = False # left
+            choice.walls[1] = False # right
         else:
-            current.walls[1] = False
-            choice.walls[3] = False
+            current.walls[1] = False #right
+            choice.walls[3] = False # left
 
 # return neigbors that ar not visited yet.
 def getUnvisitedNeighbors(maze: list, cell: Cell) -> list:
@@ -177,6 +175,7 @@ def makeStartEnd(maze: list):
             run = False
     
 #Returns the heuristic value between two cells.
+# manhattan distance
 def h(p1, p2)-> int:
     x1, y1 = p1
     x2, y2 = p2
@@ -189,7 +188,21 @@ def path(came_from: list, current_tile: Cell, draw, win):
         current_tile.make_path()
         draw()
 
+# g_score: current shortest known path
+# f_score: g_score + h 
+# open_set = PQ (f_score, tie_breaker, cell)
 # A-star Algorithm.
+#Standard A* works like this:
+#Pick the node with the lowest f-score from the priority queue.
+#If this node is the goal, reconstruct the path using the came_from map.
+#Otherwise, for each neighbor:
+#Compute a new tentative g_score (temp_g_score).
+#If this new score is better than the previous one:
+#Update came_from[neighbor] = current
+#Update g_score[neighbor]
+#Update f_score[neighbor] = g_score + heuristic
+#If the neighbor is not already in the open set, add it and mark it as “open”.
+#After processing all neighbors, if the current node is not the start node, mark it as “closed”.
 def aStar(maze: list, draw, win):
     start, end = Cell, Cell
     for x in range(len(maze)):
